@@ -24,7 +24,7 @@
     "clean": "trash build test",
     "prepare": "run-s build",
     "migrate": "node -r dotenv/config ./node_modules/graphile-migrate/dist/cli.js",
-    "postinstall": "yarn build"
+    "postinstall": "yarn install --production=false && yarn build"
   },
   "sideEffects": false,
   "repository": {
