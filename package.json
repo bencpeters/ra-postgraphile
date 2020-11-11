@@ -23,7 +23,8 @@
     "doc:publish": "gh-pages -m \"[ci skip] Updates\" -d build/docs",
     "clean": "trash build test",
     "prepare": "run-s build",
-    "migrate": "node -r dotenv/config ./node_modules/graphile-migrate/dist/cli.js"
+    "migrate": "node -r dotenv/config ./node_modules/graphile-migrate/dist/cli.js",
+    "install": "run-s build"
   },
   "sideEffects": false,
   "repository": {
