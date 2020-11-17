@@ -101,6 +101,12 @@ var applyArgumentsForField = function (fieldName, typeConfig, args) {
     }
     return fieldName;
 };
+var extractFromNonNull = function (type) {
+    return type.kind === 'NON_NULL' ? type.ofType : type;
+};
+var extractFromList = function (type) {
+    return type.kind === 'LIST' ? type.ofType : type;
+};
 export var createQueryFromType = function (type, typeMap, typeConfiguration, primaryKey, fetchQueryType) {
     return typeMap[type].fields.reduce(function (current, field) {
         // we have to skip fields that require arguments
@@ -123,12 +129,6 @@ export var createQueryFromType = function (type, typeMap, typeConfiguration, pri
             }
         }
         if (fieldIsObjectOrListOfObject(field)) {
-            var extractFromNonNull = function (type) {
-                return type.kind === 'NON_NULL' ? type.ofType : type;
-            };
-            var extractFromList = function (type) {
-                return type.kind === 'LIST' ? type.ofType : type;
-            };
             // Get the "base" type of this field. It can be wrapped in a few different ways:
             // - TYPE (bare type)
             // - TYPE! (non-null type)
@@ -166,19 +166,19 @@ export var createGetListQuery = function (type, manyLowerResourceName, resourceT
     var ordering = queryHasArgument(manyLowerResourceName, ARGUMENT_ORDER_BY, queryMap);
     var hasOrdering = hasOthersThenNaturalOrdering(typeMap, ordering === null || ordering === void 0 ? void 0 : ordering.type);
     if (!hasFilters && !hasOrdering) {
-        return gql(templateObject_3 || (templateObject_3 = __makeTemplateObject(["query ", "($offset: Int!, $first: Int!) {\n      ", "(first: $first, offset: $offset) {\n      nodes {\n        ", "\n      }\n      totalCount\n    }\n    }"], ["query ", "($offset: Int!, $first: Int!) {\n      ", "(first: $first, offset: $offset) {\n      nodes {\n        ",
-            "\n      }\n      totalCount\n    }\n    }"])), manyLowerResourceName, manyLowerResourceName, createQueryFromType(resourceTypename, typeMap, typeConfiguration, primaryKey, fetchQueryType));
+        return gql(templateObject_3 || (templateObject_3 = __makeTemplateObject(["query ", "(\n        $offset: Int!,\n        $first: Int!,\n        $condition = ", "Condition = {}\n      ) {\n        ", "(first: $first, offset: $offset, condition: $condition) {\n        nodes {\n          ", "\n        }\n        totalCount\n      }\n    }"], ["query ", "(\n        $offset: Int!,\n        $first: Int!,\n        $condition = ", "Condition = {}\n      ) {\n        ", "(first: $first, offset: $offset, condition: $condition) {\n        nodes {\n          ",
+            "\n        }\n        totalCount\n      }\n    }"])), manyLowerResourceName, resourceTypename, manyLowerResourceName, createQueryFromType(resourceTypename, typeMap, typeConfiguration, primaryKey, fetchQueryType));
     }
     if (!hasFilters && hasOrdering) {
-        return gql(templateObject_4 || (templateObject_4 = __makeTemplateObject(["query ", " (\n    $offset: Int!,\n    $first: Int!,\n    $orderBy: [", "OrderBy!]\n    ) {\n      ", "(first: $first, offset: $offset, orderBy: $orderBy) {\n      nodes {\n        ", "\n      }\n      totalCount\n    }\n    }"], ["query ", " (\n    $offset: Int!,\n    $first: Int!,\n    $orderBy: [", "OrderBy!]\n    ) {\n      ", "(first: $first, offset: $offset, orderBy: $orderBy) {\n      nodes {\n        ",
-            "\n      }\n      totalCount\n    }\n    }"])), manyLowerResourceName, pluralizedResourceTypeName, manyLowerResourceName, createQueryFromType(resourceTypename, typeMap, typeConfiguration, primaryKey, fetchQueryType));
+        return gql(templateObject_4 || (templateObject_4 = __makeTemplateObject(["query ", " (\n    $offset: Int!,\n    $first: Int!,\n    $orderBy: [", "OrderBy!]\n    $condition: ", "Condition = {}\n    ) {\n      ", "(\n        first: $first,\n        offset: $offset,\n        orderBy: $orderBy,\n        condition: $condition\n      ) {\n      nodes {\n        ", "\n      }\n      totalCount\n    }\n    }"], ["query ", " (\n    $offset: Int!,\n    $first: Int!,\n    $orderBy: [", "OrderBy!]\n    $condition: ", "Condition = {}\n    ) {\n      ", "(\n        first: $first,\n        offset: $offset,\n        orderBy: $orderBy,\n        condition: $condition\n      ) {\n      nodes {\n        ",
+            "\n      }\n      totalCount\n    }\n    }"])), manyLowerResourceName, pluralizedResourceTypeName, resourceTypename, manyLowerResourceName, createQueryFromType(resourceTypename, typeMap, typeConfiguration, primaryKey, fetchQueryType));
     }
     if (hasFilters && !hasOrdering) {
-        return gql(templateObject_5 || (templateObject_5 = __makeTemplateObject(["query ", " (\n    $offset: Int!,\n    $first: Int!,\n    $filter: ", "Filter,\n    ) {\n      ", "(first: $first, offset: $offset, filter: $filter) {\n      nodes {\n        ", "\n      }\n      totalCount\n    }\n    }"], ["query ", " (\n    $offset: Int!,\n    $first: Int!,\n    $filter: ", "Filter,\n    ) {\n      ", "(first: $first, offset: $offset, filter: $filter) {\n      nodes {\n        ",
-            "\n      }\n      totalCount\n    }\n    }"])), manyLowerResourceName, resourceTypename, manyLowerResourceName, createQueryFromType(resourceTypename, typeMap, typeConfiguration, primaryKey, fetchQueryType));
+        return gql(templateObject_5 || (templateObject_5 = __makeTemplateObject(["query ", " (\n    $offset: Int!,\n    $first: Int!,\n    $filter: ", "Filter,\n    $condition: ", "Condition = {}\n    ) {\n      ", "(\n        first: $first,\n        offset: $offset,\n        filter: $filter,\n        condition: $condition\n      ) {\n      nodes {\n        ", "\n      }\n      totalCount\n    }\n    }"], ["query ", " (\n    $offset: Int!,\n    $first: Int!,\n    $filter: ", "Filter,\n    $condition: ", "Condition = {}\n    ) {\n      ", "(\n        first: $first,\n        offset: $offset,\n        filter: $filter,\n        condition: $condition\n      ) {\n      nodes {\n        ",
+            "\n      }\n      totalCount\n    }\n    }"])), manyLowerResourceName, resourceTypename, resourceTypename, manyLowerResourceName, createQueryFromType(resourceTypename, typeMap, typeConfiguration, primaryKey, fetchQueryType));
     }
-    return gql(templateObject_6 || (templateObject_6 = __makeTemplateObject(["query ", " (\n  $offset: Int!,\n  $first: Int!,\n  $filter: ", "Filter,\n  $orderBy: [", "OrderBy!]\n  ) {\n    ", "(first: $first, offset: $offset, filter: $filter, orderBy: $orderBy) {\n    nodes {\n      ", "\n    }\n    totalCount\n  }\n  }"], ["query ", " (\n  $offset: Int!,\n  $first: Int!,\n  $filter: ", "Filter,\n  $orderBy: [", "OrderBy!]\n  ) {\n    ", "(first: $first, offset: $offset, filter: $filter, orderBy: $orderBy) {\n    nodes {\n      ",
-        "\n    }\n    totalCount\n  }\n  }"])), manyLowerResourceName, resourceTypename, pluralizedResourceTypeName, manyLowerResourceName, createQueryFromType(resourceTypename, typeMap, typeConfiguration, primaryKey, fetchQueryType));
+    return gql(templateObject_6 || (templateObject_6 = __makeTemplateObject(["query ", " (\n  $offset: Int!,\n  $first: Int!,\n  $filter: ", "Filter,\n  $condition: ", "Condition,\n  $orderBy: [", "OrderBy!]\n  ) {\n    ", "(\n      first: $first,\n      offset: $offset,\n      filter: $filter,\n      orderBy: $orderBy,\n      condition: $condition\n    ) {\n    nodes {\n      ", "\n    }\n    totalCount\n  }\n  }"], ["query ", " (\n  $offset: Int!,\n  $first: Int!,\n  $filter: ", "Filter,\n  $condition: ", "Condition,\n  $orderBy: [", "OrderBy!]\n  ) {\n    ", "(\n      first: $first,\n      offset: $offset,\n      filter: $filter,\n      orderBy: $orderBy,\n      condition: $condition\n    ) {\n    nodes {\n      ",
+        "\n    }\n    totalCount\n  }\n  }"])), manyLowerResourceName, resourceTypename, resourceTypename, pluralizedResourceTypeName, manyLowerResourceName, createQueryFromType(resourceTypename, typeMap, typeConfiguration, primaryKey, fetchQueryType));
 };
 export var createTypeMap = function (types) {
     return types.reduce(function (map, next) {

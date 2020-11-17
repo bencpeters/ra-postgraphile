@@ -88,6 +88,12 @@ const applyArgumentsForField = (fieldName, typeConfig, args) => {
     }
     return fieldName;
 };
+const extractFromNonNull = (type) => {
+    return type.kind === 'NON_NULL' ? type.ofType : type;
+};
+const extractFromList = (type) => {
+    return type.kind === 'LIST' ? type.ofType : type;
+};
 exports.createQueryFromType = (type, typeMap, typeConfiguration, primaryKey, fetchQueryType) => {
     return typeMap[type].fields.reduce((current, field) => {
         // we have to skip fields that require arguments
@@ -110,12 +116,6 @@ exports.createQueryFromType = (type, typeMap, typeConfiguration, primaryKey, fet
             }
         }
         if (fieldIsObjectOrListOfObject(field)) {
-            const extractFromNonNull = (type) => {
-                return type.kind === 'NON_NULL' ? type.ofType : type;
-            };
-            const extractFromList = (type) => {
-                return type.kind === 'LIST' ? type.ofType : type;
-            };
             // Get the "base" type of this field. It can be wrapped in a few different ways:
             // - TYPE (bare type)
             // - TYPE! (non-null type)
@@ -166,13 +166,17 @@ exports.createGetListQuery = (type, manyLowerResourceName, resourceTypename, plu
     const ordering = exports.queryHasArgument(manyLowerResourceName, ARGUMENT_ORDER_BY, queryMap);
     const hasOrdering = hasOthersThenNaturalOrdering(typeMap, ordering === null || ordering === void 0 ? void 0 : ordering.type);
     if (!hasFilters && !hasOrdering) {
-        return graphql_tag_1.default `query ${manyLowerResourceName}($offset: Int!, $first: Int!) {
-      ${manyLowerResourceName}(first: $first, offset: $offset) {
-      nodes {
-        ${exports.createQueryFromType(resourceTypename, typeMap, typeConfiguration, primaryKey, fetchQueryType)}
+        return graphql_tag_1.default `query ${manyLowerResourceName}(
+        $offset: Int!,
+        $first: Int!,
+        $condition = ${resourceTypename}Condition = {}
+      ) {
+        ${manyLowerResourceName}(first: $first, offset: $offset, condition: $condition) {
+        nodes {
+          ${exports.createQueryFromType(resourceTypename, typeMap, typeConfiguration, primaryKey, fetchQueryType)}
+        }
+        totalCount
       }
-      totalCount
-    }
     }`;
     }
     if (!hasFilters && hasOrdering) {
@@ -180,8 +184,14 @@ exports.createGetListQuery = (type, manyLowerResourceName, resourceTypename, plu
     $offset: Int!,
     $first: Int!,
     $orderBy: [${pluralizedResourceTypeName}OrderBy!]
+    $condition: ${resourceTypename}Condition = {}
     ) {
-      ${manyLowerResourceName}(first: $first, offset: $offset, orderBy: $orderBy) {
+      ${manyLowerResourceName}(
+        first: $first,
+        offset: $offset,
+        orderBy: $orderBy,
+        condition: $condition
+      ) {
       nodes {
         ${exports.createQueryFromType(resourceTypename, typeMap, typeConfiguration, primaryKey, fetchQueryType)}
       }
@@ -194,8 +204,14 @@ exports.createGetListQuery = (type, manyLowerResourceName, resourceTypename, plu
     $offset: Int!,
     $first: Int!,
     $filter: ${resourceTypename}Filter,
+    $condition: ${resourceTypename}Condition = {}
     ) {
-      ${manyLowerResourceName}(first: $first, offset: $offset, filter: $filter) {
+      ${manyLowerResourceName}(
+        first: $first,
+        offset: $offset,
+        filter: $filter,
+        condition: $condition
+      ) {
       nodes {
         ${exports.createQueryFromType(resourceTypename, typeMap, typeConfiguration, primaryKey, fetchQueryType)}
       }
@@ -207,9 +223,16 @@ exports.createGetListQuery = (type, manyLowerResourceName, resourceTypename, plu
   $offset: Int!,
   $first: Int!,
   $filter: ${resourceTypename}Filter,
+  $condition: ${resourceTypename}Condition,
   $orderBy: [${pluralizedResourceTypeName}OrderBy!]
   ) {
-    ${manyLowerResourceName}(first: $first, offset: $offset, filter: $filter, orderBy: $orderBy) {
+    ${manyLowerResourceName}(
+      first: $first,
+      offset: $offset,
+      filter: $filter,
+      orderBy: $orderBy,
+      condition: $condition
+    ) {
     nodes {
       ${exports.createQueryFromType(resourceTypename, typeMap, typeConfiguration, primaryKey, fetchQueryType)}
     }

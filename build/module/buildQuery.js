@@ -13,6 +13,17 @@ var __assign = (this && this.__assign) || function () {
     };
     return __assign.apply(this, arguments);
 };
+var __rest = (this && this.__rest) || function (s, e) {
+    var t = {};
+    for (var p in s) if (Object.prototype.hasOwnProperty.call(s, p) && e.indexOf(p) < 0)
+        t[p] = s[p];
+    if (s != null && typeof Object.getOwnPropertySymbols === "function")
+        for (var i = 0, p = Object.getOwnPropertySymbols(s); i < p.length; i++) {
+            if (e.indexOf(p[i]) < 0 && Object.prototype.propertyIsEnumerable.call(s, p[i]))
+                t[p[i]] = s[p[i]];
+        }
+    return t;
+};
 import gql from 'graphql-tag';
 import pluralize, { singular } from 'pluralize';
 import { GET_MANY, GET_LIST, CREATE, UPDATE, UPDATE_MANY, GET_ONE, GET_MANY_REFERENCE, DELETE_MANY, DELETE, } from 'ra-core';
@@ -82,10 +93,11 @@ export var buildQuery = function (introspectionResults, factory) { return functi
             return getManyReference(params, type, manyLowerResourceName, resourceTypename, pluralizedResourceTypeName, typeMap, queryMap, typeMapConfiguration, primaryKey, GET_MANY_REFERENCE);
         case GET_LIST: {
             var _b = params, filter = _b.filter, sort = _b.sort, pagination = _b.pagination;
+            var _c = filter || {}, condition = _c.condition, pluginFilters = __rest(_c, ["condition"]);
             var orderBy = sort && sort.field && sort.order
                 ? [createSortingKey(sort.field, sort.order)]
                 : [NATURAL_SORTING];
-            var filters = createFilter(filter, type);
+            var filters = createFilter(pluginFilters, type);
             return {
                 query: createGetListQuery(type, manyLowerResourceName, resourceTypename, pluralizedResourceTypeName, typeMap, queryMap, typeMapConfiguration, primaryKey, GET_LIST),
                 variables: stripUndefined({
@@ -93,6 +105,7 @@ export var buildQuery = function (introspectionResults, factory) { return functi
                     first: pagination.perPage,
                     filter: filters,
                     orderBy: orderBy,
+                    condition: condition,
                 }),
                 parseResponse: function (response) {
                     var _a = response.data[manyLowerResourceName], nodes = _a.nodes, totalCount = _a.totalCount;
@@ -170,7 +183,7 @@ export var buildQuery = function (introspectionResults, factory) { return functi
             };
         }
         case UPDATE_MANY: {
-            var _c = params, ids_1 = _c.ids, data_1 = _c.data;
+            var _d = params, ids_1 = _d.ids, data_1 = _d.data;
             var inputs = ids_1.map(function (id) { return ({
                 id: mapType(primaryKeyType, id),
                 clientMutationId: id.toString(),

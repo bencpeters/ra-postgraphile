@@ -18,6 +18,17 @@ var __importStar = (this && this.__importStar) || function (mod) {
     __setModuleDefault(result, mod);
     return result;
 };
+var __rest = (this && this.__rest) || function (s, e) {
+    var t = {};
+    for (var p in s) if (Object.prototype.hasOwnProperty.call(s, p) && e.indexOf(p) < 0)
+        t[p] = s[p];
+    if (s != null && typeof Object.getOwnPropertySymbols === "function")
+        for (var i = 0, p = Object.getOwnPropertySymbols(s); i < p.length; i++) {
+            if (e.indexOf(p[i]) < 0 && Object.prototype.propertyIsEnumerable.call(s, p[i]))
+                t[p[i]] = s[p[i]];
+        }
+    return t;
+};
 var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
@@ -92,10 +103,11 @@ exports.buildQuery = (introspectionResults, factory) => (raFetchType, resName, p
             return getManyReference_1.getManyReference(params, type, manyLowerResourceName, resourceTypename, pluralizedResourceTypeName, typeMap, queryMap, typeMapConfiguration, primaryKey, ra_core_1.GET_MANY_REFERENCE);
         case ra_core_1.GET_LIST: {
             const { filter, sort, pagination } = params;
+            const _a = filter || {}, { condition } = _a, pluginFilters = __rest(_a, ["condition"]);
             const orderBy = sort && sort.field && sort.order
                 ? [utils_1.createSortingKey(sort.field, sort.order)]
                 : [types_1.NATURAL_SORTING];
-            const filters = filters_1.createFilter(filter, type);
+            const filters = filters_1.createFilter(pluginFilters, type);
             return {
                 query: utils_1.createGetListQuery(type, manyLowerResourceName, resourceTypename, pluralizedResourceTypeName, typeMap, queryMap, typeMapConfiguration, primaryKey, ra_core_1.GET_LIST),
                 variables: utils_1.stripUndefined({
@@ -103,6 +115,7 @@ exports.buildQuery = (introspectionResults, factory) => (raFetchType, resName, p
                     first: pagination.perPage,
                     filter: filters,
                     orderBy,
+                    condition,
                 }),
                 parseResponse: (response) => {
                     const { nodes, totalCount } = response.data[manyLowerResourceName];
